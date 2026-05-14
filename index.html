@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Astromelia 3 — Gestión Residencial</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- SDK de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, collection, query, orderBy, onSnapshot, serverTimestamp, where, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // CONFIGURACIÓN
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9BP0acOSHf6t5zNJjAj3Vj17MrINkFLA",
+            authDomain: "astromelia-3-e55f6.firebaseapp.com",
+            projectId: "astromelia-3-e55f6",
+            storageBucket: "astromelia-3-e55f6.firebasestorage.app",
+            messagingSenderId: "156514454106",
+            appId: "1:156514454106:web:b4dfbad17d2e9623ec2663",
+            measurementId: "G-SK7CW1S4S9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- LÓGICA DE USUARIOS Y SESIÓN ---
+        window.login = async (email, pass) => {
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                alert("Error de acceso: Verifica tus datos");
+            }
+        };
+
+        window.cerrarSesion = () => {
+            signOut(auth).then(() => { location.reload(); });
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+                if (userDoc.exists()) {
+                    renderApp(userDoc.data());
+                }
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appScreen').style.display = 'none';
+            }
+        });
+
+        // --- LÓGICA DE PORTERÍA (CON FOTO GRATIS) ---
+        window.registrarEntrada = async () => {
+            const nombre = document.getElementById('visNombre').value;
+            const destino = document.getElementById('visApto').value;
+            const vehiculo = document.getElementById('visVehiculo').value;
+            const placa = document.getElementById('visPlaca').value;
+            const fotoArchivo = document.getElementById('visFoto').files[0];
+
+            if(!nombre || !destino) return alert("Nombre y Apto son obligatorios");
+
+            try {
+                let fotoBase64 = "";
+
+                // Convertimos la foto a texto para que sea GRATIS
+                if (fotoArchivo) {
+                    fotoBase64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(fotoArchivo);
+                    });
+                }
+
+                await addDoc(collection(db, "visitantes"), {
+                    nombre,
+                    destino,
+                    vehiculo,
+                    placa: vehiculo !== "Ninguno" ? placa : "N/A",
+                    foto: fotoBase64, 
+                    entrada: serverTimestamp(),
+                    portero: auth.currentUser.uid,
+                    estado: "En el conjunto"
+                });
+
+                document.getElementById('formVis').reset();
+                document.getElementById('previewFoto').style.display = 'none';
+                alert("✅ Registro exitoso (Foto guardada gratis)");
+            } catch (e) {
+                console.error(e);
+                alert("Error al registrar");
+            }
+        };
+
+        window.initPorteria = () => {
+            const q = query(collection(db, "visitantes"), orderBy("entrada", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const lista = document.getElementById('listaVisitantes');
+                lista.innerHTML = snapshot.docs.map(doc => `
+                    <div class="card-item">
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>${doc.data().nombre}</b>
+                            <span class="badge">${doc.data().vehiculo}</span>
+                        </div>
+                        <small>${doc.data().entrada?.toDate().toLocaleString() || 'Procesando...'}</small>
+                    </div>
+                `).join('');
+            });
+        };
+
+        // --- RENDERIZADO PRINCIPAL ---
+        function renderApp(data) {
+            window.userData = data;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            document.getElementById('userName').innerText = data.nombre;
+            document.getElementById('userRoleLabel').innerText = data.rol.toUpperCase();
+            
+            if(data.rol === 'portero') {
+                document.getElementById('secPorteria').style.display = 'block';
+                document.getElementById('secResidente').style.display = 'none';
+                initPorteria();
+            } else {
+                document.getElementById('secResidente').style.display = 'block';
+                document.getElementById('secPorteria').style.display = 'none';
+                
+                const qVisitas = query(
+                    collection(db, "visitantes"), 
+                    where("destino", "==", data.apto), 
+                    orderBy("entrada", "desc"), 
+                    limit(1)
+                );
+
+                onSnapshot(qVisitas, (snapshot) => {
+                    if (!snapshot.empty) {
+                        const visita = snapshot.docs[0].data();
+                        const msgBox = document.getElementById('msgAviso');
+                        msgBox.innerHTML = `
+                            <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px solid #1b5e20; margin-top:10px;">
+                                <strong style="color: #1b5e20; font-size:1.1em;">🚨 ¡Nueva Visita!</strong><br>
+                                ${visita.foto ? `<img src="${visita.foto}" style="width:100%; border-radius:8px; margin: 10px 0; border: 1px solid #ddd;">` : ''}
+                                <b style="font-size: 1.2rem;">${visita.nombre}</b> está en portería.<br>
+                                <small>Vehículo: ${visita.vehiculo} ${visita.placa !== 'N/A' ? '['+visita.placa+']' : ''}</small>
+                            </div>
+                        `;
+                    }
+                });
+            }
+        }
+    </script>
+
+    <style>
+        :root { --p:#1b5e20; --s:#f0a500; --bg:#f5f6f4; --w:#fff; --danger:#c62828; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); margin: 0; color: #333; }
+        .screen { min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        .card { background: var(--w); border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-p { background: var(--p); color: white; }
+        .btn-foto { background: #546e7a; color: white; margin: 10px 0; display: block; text-align: center; cursor: pointer; padding: 10px; border-radius: 8px; }
+        header { background: var(--p); color: white; padding: 30px 20px; border-radius: 0 0 25px 25px; margin: -20px -20px 20px -20px; }
+        .logo-container { display: flex; align-items: center; gap: 10px; }
+        .card-item { border-bottom: 1px solid #eee; padding: 12px 0; }
+        .badge { font-size: 0.7em; background: #e8f5e9; color: var(--p); padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen" class="screen" style="display: none; flex-direction: column; justify-content: center; background: #1b5e20;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🌹</div>
+            <h2 style="color: var(--p); margin: 0;">Astromelia 3</h2>
+            <input type="email" id="email" placeholder="Correo electrónico">
+            <input type="password" id="pass" placeholder="Contraseña">
+            <button class="btn-p" onclick="login(document.getElementById('email').value, document.getElementById('pass').value)">INGRESAR</button>
+        </div>
+    </div>
+
+    <div id="appScreen" class="screen" style="display: none;">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="logo-container">
+                    <span style="font-size: 1.8rem;">🌹</span>
+                    <div>
+                        <h1 style="font-size: 1.2rem; margin: 0;">Astromelia 3</h1>
+                        <small id="userRoleLabel" style="opacity: 0.8; font-size: 0.7rem; letter-spacing: 1px;"></small>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <b id="userName" style="display: block; font-size: 0.9rem;">Cargando...</b>
+                    <button onclick="cerrarSesion()" style="background: none; color: #ffab91; border:none; text-decoration: underline; cursor:pointer;">Salir</button>
+                </div>
+            </div>
+        </header>
+
+        <div id="secPorteria" style="display: none;">
+            <div class="card">
+                <h3 style="margin-top: 0; color: var(--p);">🛂 Registro de Entrada</h3>
+                <form id="formVis">
+                    <input type="text" id="visNombre" placeholder="Nombre del Visitante">
+                    <input type="text" id="visApto" placeholder="Apartamento (Ej: 5-501)">
+                    
+                    <!-- BOTÓN DE CÁMARA GRATIS -->
+                    <label class="btn-foto">
+                        📷 TOMAR FOTO
+                        <input type="file" id="visFoto" accept="image/*" capture="environment" style="display: none;" onchange="document.getElementById('previewFoto').style.display='block';">
+                    </label>
+                    <p id="previewFoto" style="display: none; font-size: 0.8rem; color: var(--p); text-align: center; margin-bottom: 10px;">✅ Foto cargada</p>
+
+                    <select id="visVehiculo" onchange="document.getElementById('placaBox').style.display = this.value === 'Ninguno' ? 'none' : 'block'">
+                        <option value="Ninguno">Sin Vehículo</option>
+                        <option value="Carro">Carro</option>
+                        <option value="Moto">Moto</option>
+                    </select>
+
+                    <div id="placaBox" style="display: none;">
+                        <input type="text" id="visPlaca" placeholder="Placa" style="text-transform: uppercase;">
+                    </div>
+
+                    <button type="button" class="btn-p" onclick="registrarEntrada()">REGISTRAR E INFORMAR</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>🕒 Historial</h3>
+                <div id="listaVisitantes"></div>
+            </div>
+        </div>
+
+        <div id="secResidente" style="display: none;">
+            <div class="card" style="border-left: 5px solid var(--s);">
+                <h3>🔔 Notificaciones</h3>
+                <div id="msgAviso">
+                    <p style="color: #666;">Sin visitas activas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
