@@ -104,14 +104,15 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC9BP0acOSHf6t5zNjAj3Vj17MrInkFLA",
-            authDomain: "astromelia-3-e55f6.firebaseapp.com",
-            projectId: "astromelia-3-e55f6",
-            storageBucket: "astromelia-3-e55f6.firebasestorage.app",
-            messagingSenderId: "156514454106",
-            appId: "1:156514454106:web:b4dfbad17d2e9623ec2663"
-        };
+     const firebaseConfig = {
+    apiKey: "AIzaSyC9BP0acOSHf6t5zNjAj3Vj17MrInkFLA",
+    authDomain: "astromelia-3-e55f6.firebaseapp.com",
+    projectId: "astromelia-3-e55f6",
+    storageBucket: "astromelia-3-e55f6.firebasestorage.app",
+    messagingSenderId: "156514454106",
+    appId: "1:156514454106:web:b4dfbad17d2e9623ec2663",
+    measurementId: "G-SK7CW1S4S9"
+  };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
