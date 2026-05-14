@@ -2,69 +2,99 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astromelia 3 — Soacha</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos simplificados del diseño de Claude */
-        :root{ --g:#1a6b4a; --gm:#2d9e6e; --gd:#0d4a32; --bg:#f5f6f4; --w:#fff; --tx:#1a1f1c; --bo:#e2e8e5; }
-        body{ font-family:'DM Sans', sans-serif; background:var(--bg); color:var(--tx); max-width:430px; margin:0 auto; min-height: 100vh; }
+        :root { --p:#1a6b4a; --ps:#2d9e6e; --pd:#0d4a32; --bg:#f8faf9; --w:#ffffff; --t:#1a1f1c; --ts:#64748b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--t); display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 430px; min-height: 100vh; position: relative; background: var(--bg); }
         
         /* Pantallas */
-        .screen { display: none; padding: 20px; }
+        .screen { display: none; width: 100%; height: 100%; }
         .screen.active { display: block; }
 
-        /* Login Estilo Astromelia */
-        #login-screen { background: var(--gd); min-height: 100vh; color: white; text-align: center; padding-top: 60px; }
-        .login-card { background: white; border-radius: 24px 24px 0 0; padding: 30px; margin-top: 50px; color: #333; height: 100%; }
-        
-        /* UI Elements */
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--bo); border-radius: 12px; }
-        .btn { width: 100%; padding: 15px; background: var(--g); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .hdr { background: var(--g); color: white; padding: 25px; border-radius: 0 0 25px 25px; }
-        .card { background: white; padding: 15px; border-radius: 15px; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* Estilo Login (image_bf9ca0.png) */
+        .login-hdr { background: var(--pd); height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .logo-box { background: var(--ps); padding: 15px; border-radius: 20px; margin-bottom: 15px; font-size: 40px; }
+        .login-card { background: white; margin-top: -40px; border-radius: 30px 30px 0 0; padding: 30px; min-height: 500px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--ts); margin-bottom: 8px; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f1f5f9; }
+        .btn-main { width: 100%; padding: 16px; background: var(--pd); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .demo-box { display: flex; gap: 10px; margin-bottom: 25px; }
+        .demo-btn { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 20px; background: white; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        /* Estilo Dashboard (image_bf9c60.png) */
+        .dash-hdr { background: var(--pd); padding: 30px 20px 50px; color: white; }
+        .user-info h2 { font-size: 20px; margin-bottom: 5px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: -25px 20px 20px; }
+        .nav-item { background: white; padding: 15px 5px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .nav-item span { display: block; font-size: 10px; margin-top: 5px; font-weight: 600; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 15px; border-radius: 12px; text-align: center; }
+        .stat-val { display: block; font-weight: 700; color: var(--ps); font-size: 18px; }
+        .section-hdr { display: flex; justify-content: space-between; padding: 0 20px; margin-bottom: 15px; font-weight: 700; }
+        .notice-card { background: white; margin: 0 20px 10px; padding: 15px; border-radius: 15px; display: flex; gap: 15px; border-left: 4px solid var(--ps); }
     </style>
 </head>
 <body>
-
-    <!-- PANTALLA LOGIN -->
-    <div id="login-screen" class="screen active">
-        <div style="font-size: 50px;">🌸</div>
-        <h2>Astromelia 3</h2>
-        <p style="opacity: 0.7">Conjunto Residencial</p>
-        
-        <div class="login-card">
-            <h3 style="margin-bottom: 20px;">Ingresar</h3>
-            <input type="email" id="email" placeholder="correo@ejemplo.com">
-            <input type="password" id="pass" placeholder="Contraseña">
-            <p id="error-msg" style="color: red; font-size: 12px; display: none;"></p>
-            <button class="btn" id="loginBtn">Entrar a la App</button>
-        </div>
-    </div>
-
-    <!-- PANTALLA PRINCIPAL -->
-    <div id="main-screen" class="screen">
-        <div class="hdr">
-            <div style="display: flex; justify-content: space-between;">
-                <span>🌸 Astromelia 3</span>
-                <button onclick="location.reload()" style="background:none; border:none; color:white;">Cerrar</button>
+    <div class="app-container">
+        <!-- PANTALLA LOGIN -->
+        <div id="login-screen" class="screen active">
+            <div class="login-hdr">
+                <div class="logo-box">🌸</div>
+                <h1>Astromelia 3</h1>
+                <p>Conjunto residencial · Soacha</p>
             </div>
-            <h1 id="user-name" style="margin-top: 15px;">---</h1>
-            <p id="user-apto">Apto ---</p>
-        </div>
-
-        <div class="card">
-            <h4>💰 Estado de Cuenta</h4>
-            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                <span id="user-status" style="padding: 4px 10px; border-radius: 10px; font-size: 12px;">---</span>
-                <b id="user-balance">$ 0</b>
+            <div class="login-card">
+                <h3 style="text-align:center; margin-bottom: 20px;">Ingresa a tu cuenta</h3>
+                <p style="font-size: 12px; color:var(--ps); font-weight:700; margin-bottom:10px;">Acceso rápido:</p>
+                <div class="demo-box">
+                    <button class="demo-btn" onclick="llenar('apartamento5-501@astromelia.com')">🏠 Apto 5-501</button>
+                    <button class="demo-btn" onclick="llenar('portero@astromelia.com')">👮 Portería</button>
+                </div>
+                <div class="input-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" id="email" placeholder="tu@correo.com">
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="pass" placeholder="••••••••">
+                </div>
+                <button class="btn-main" id="loginBtn">Ingresar</button>
+                <p id="error-log" style="color:red; font-size:12px; margin-top:15px; text-align:center; display:none;"></p>
             </div>
         </div>
 
-        <div class="card">
-            <h4>📅 Mis Reservas</h4>
-            <div id="reservas-list" style="font-size: 13px; color: #666; margin-top: 10px;">
-                No tienes reservas activas.
+        <!-- PANTALLA DASHBOARD -->
+        <div id="main-screen" class="screen">
+            <div class="dash-hdr">
+                <div class="user-info">
+                    <p style="opacity: 0.8; font-size: 12px;">Bienvenido,</p>
+                    <h2 id="u-name">Cargando...</h2>
+                    <span id="u-apto" style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 11px;">Apto ---</span>
+                </div>
+            </div>
+            <div class="nav-grid">
+                <div class="nav-item"><div style="color:var(--ps)">🏠</div><span>Inicio</span></div>
+                <div class="nav-item"><div>📢</div><span>Avisos</span></div>
+                <div class="nav-item"><div>💳</div><span>Pagos</span></div>
+                <div class="nav-item"><div>📅</div><span>Reservas</span></div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><span class="stat-val" id="u-saldo">$0</span><span style="font-size:10px">Mi saldo</span></div>
+                <div class="stat-card"><span class="stat-val">2</span><span style="font-size:10px">Zonas libres</span></div>
+                <div class="stat-card"><span class="stat-val">3</span><span style="font-size:10px">Avisos</span></div>
+            </div>
+            <div class="section-hdr"><span>Avisos recientes</span><a href="#" style="color:var(--ps); font-size:12px; text-decoration:none;">Ver todos</a></div>
+            <div class="notice-card">
+                <div style="background:#eff6ff; padding:10px; border-radius:10px;">💧</div>
+                <div>
+                    <h4 style="font-size:14px">Corte de agua mañana <span style="background:#fee2e2; color:#ef4444; font-size:9px; padding:2px 6px; border-radius:10px;">Urgente</span></h4>
+                    <p style="font-size:11px; color:var(--ts)">Mantenimiento tubería. 8am—2pm. Almacenen agua.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -72,81 +102,51 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // DATOS REALES EXTRAÍDOS DE TU CAPTURA DE PANTALLA (image_ca7edd.png)
         const firebaseConfig = {
             apiKey: "AIzaSyC9BP0acOSHf6t5zNjAj3Vj17MrInkFLA",
             authDomain: "astromelia-3-e55f6.firebaseapp.com",
             projectId: "astromelia-3-e55f6",
             storageBucket: "astromelia-3-e55f6.firebasestorage.app",
             messagingSenderId: "156514454106",
-            appId: "1:156514454106:web:b4dfbad17d2e9623ec2663",
-            measurementId: "G-SK7CW1S4S9"
+            appId: "1:156514454106:web:b4dfbad17d2e9623ec2663"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // FUNCIÓN LOGIN REAL
+        window.llenar = (correo) => {
+            document.getElementById('email').value = correo;
+            document.getElementById('pass').value = "123456"; // Cambia esto por la clave real que pusiste en Auth
+        };
+
         document.getElementById('loginBtn').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
-            const err = document.getElementById('error-msg');
+            const err = document.getElementById('error-log');
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-                const uid = userCredential.user.uid;
+                const userDoc = await getDoc(doc(db, "usuarios", userCredential.user.uid));
+                
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('main-screen').classList.add('active');
 
-                // Buscar datos en Firestore
-                const userDoc = await getDoc(doc(db, "usuarios", uid));
-
-                if (userDoc.exists()) {
-                    mostrarApp(userDoc.data());
+                if(userDoc.exists()){
+                    const d = userDoc.data();
+                    document.getElementById('u-name').innerText = d.nombre;
+                    document.getElementById('u-apto').innerText = "Copropietario · Apto " + d.apto;
+                    document.getElementById('u-saldo').innerText = "$" + d.saldo.toLocaleString();
                 } else {
-                    // Si el usuario existe en Auth pero no en la base de datos de usuarios
-                    mostrarApp({ nombre: email, apto: "Sin asignar", saldo: 0, estado: "ok" });
+                    document.getElementById('u-name').innerText = email.split('@')[0];
                 }
             } catch (e) {
-                err.innerText = "Error: Usuario o clave incorrectos";
+                err.innerText = "Error: " + e.message;
                 err.style.display = "block";
             }
         });
-
-        async function mostrarApp(data) {
-            document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('main-screen').classList.add('active');
-
-            // Cargar datos en la UI
-            document.getElementById('user-name').innerText = data.nombre;
-            document.getElementById('user-apto').innerText = "Apto " + data.apto;
-            document.getElementById('user-balance').innerText = "$ " + (data.saldo || 0).toLocaleString();
-            
-            const statusLabel = document.getElementById('user-status');
-            statusLabel.innerText = (data.estado || 'al día').toUpperCase();
-            statusLabel.style.background = data.estado === 'mora' ? '#ffebee' : '#e8f5ef';
-            statusLabel.style.color = data.estado === 'mora' ? '#c62828' : '#2e7d32';
-
-            // Cargar Reservas Reales de este usuario
-            cargarReservas(data.apto);
-        }
-
-        async function cargarReservas(apto) {
-            const q = query(collection(db, "reservas"), where("apto", "==", apto));
-            const querySnapshot = await getDocs(q);
-            const list = document.getElementById('reservas-list');
-            
-            if (!querySnapshot.empty) {
-                list.innerHTML = "";
-                querySnapshot.forEach((doc) => {
-                    const res = doc.data();
-                    list.innerHTML += `<div style="border-bottom: 1px solid #eee; padding: 5px 0;">
-                        <b>${res.zona}</b> - ${res.fecha} (${res.hora})
-                    </div>`;
-                });
-            }
-        }
     </script>
 </body>
 </html>
